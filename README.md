@@ -5,5 +5,5 @@ General / Global Inference Framework
 
 - 1. Define models you want to use including preprocessors
 - 2. Select input format (e.g., webdataest)
-- 3. Run distributed inference
+- 3. Run distributed inference (including multinode / sbatch support)
 - 4. Save to parquets
