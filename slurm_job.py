@@ -2,7 +2,6 @@ import fire
 import webdataset as wds
 from config import cache_path, output_path, target_path
 import os
-
 import subprocess
 import webdataset as wds
 import pandas as pd
@@ -10,9 +9,7 @@ from torch.utils.data import DataLoader
 from itertools import islice
 import numpy as np
 from io import BytesIO
-# from pyrovision.models import model_from_hf_hub
-from torchvision.transforms import Compose, ConvertImageDtype, Normalize, PILToTensor, Resize, ToTensor, CenterCrop
-from torchvision.transforms.functional import InterpolationMode
+from torchvision.transforms import Compose, Normalize, Resize, ToTensor, CenterCrop
 from torchvision import models
 import io
 from PIL import Image
@@ -36,7 +33,7 @@ def worker(current_shard):
         bs = 256
         dataset_url = f'pipe:aws s3 cp s3://s-datasets/laion5b/laion2B-data/{current_shard:06d}.tar -'
         ds = wds.WebDataset(dataset_url, handler=wds.warn_and_continue).map_dict(jpg=decodebyte).map_dict(jpg=transform)
-        dl = DataLoader(ds, num_workers=1, batch_size=bs, pin_memory=True, shuffle=False)
+        dl = DataLoader(ds, num_workers=2, batch_size=bs, pin_memory=True, shuffle=False)
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
         with torch.no_grad():
@@ -64,7 +61,6 @@ def worker(current_shard):
 
         df = pd.DataFrame({'__key__': keys, '__url__': urls, 'json': json_dict, 'txt': txt})
 
-        # df.to_parquet(f'{output_path}/{current_shard:06d}.parquet')
         df.to_parquet(f'{target_path}/{current_shard:06d}.parquet')
 
         with open(f'{output_path}/{current_shard:06d}.npy', "wb") as f:
